@@ -175,6 +175,52 @@ h1{
   color:#ff4d4d;
 }
 
+.iosCancelBtn{
+  width:100%;
+  max-width:290px;
+  margin-top:14px;
+  padding:14px;
+  border-radius:16px;
+
+  border:1px solid rgba(255,59,48,0.35);
+  background:rgba(255,59,48,0.12);
+
+  color:#ff4d4d;
+  font-weight:600;
+  font-size:14px;
+  letter-spacing:0.5px;
+
+  cursor:pointer;
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  transition:0.2s ease;
+}
+
+.iosCancelBtn:active{
+  transform:scale(0.98);
+  background:rgba(255,59,48,0.2);
+}
+
+#homeAppointments{
+  width:100%;
+  max-width:300px;
+  margin-top:10px;
+
+  max-height:260px;
+  overflow-y:auto;
+
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+#homeAppointments{
+  scroll-behavior:smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
 </style>
 </head>
 
@@ -183,10 +229,27 @@ h1{
 <div class="app">
 
 <!-- HOME -->
+
 <div id="s1" class="screen active">
   <h1>JOHN</h1>
   <div class="sub">BARBER</div>
- <button onclick="go(2)">ΚΛΕΙΣΕ ΤΟ ΡΑΝΤΕΒΟΥ ΣΟΥ</button>
+
+  <!-- BOOK -->
+  <button onclick="go(2)">
+    ΚΛΕΙΣΕ ΡΑΝΤΕΒΟΥ
+  </button>
+
+  <hr style="width:80%;opacity:0.2;margin:20px 0;">
+
+  <!-- LOGIN AREA -->
+  <h2> Ακύρωση Ραντεβού </h2>
+
+  <input id="homePhone" placeholder="Τηλέφωνο"/>
+  <input id="homePin" placeholder="Κωδικός"/>
+
+  <button onclick="loginHome()">ΕΙΣΟΔΟΣ</button>
+
+  <div id="homeAppointments"></div>
 </div>
 
 <!-- USER -->
@@ -219,12 +282,25 @@ h1{
 </div>
 
 <!-- SUCCESS -->
+
 <div id="s4" class="screen">
   <h1>✔</h1>
-<div class="sub">Το ραντεβού σου καταχωρήθηκε</div>
 
-<button onclick="go(1)">EXIT</button>
+  <div class="sub">Το ραντεβού σου καταχωρήθηκε</div>
 
+  <div id="receipt"
+       style="
+        margin-top:20px;
+        width:100%;
+        max-width:300px;
+        text-align:left;
+        font-size:14px;
+        line-height:1.6;
+        opacity:0.9;
+       ">
+  </div>
+
+  <button onclick="go(1)">EXIT</button>
 </div>
 
 <!-- ADMIN -->
@@ -265,11 +341,72 @@ let selectedDay = null;
 let selectedTime = null;
 
 let booked = [];
+let blocked = [];
 let adminSelectedDay = null;
 
-let blocked = [];
+async function loginHome(){
 
-/* NAV */
+  const phone = document.getElementById("homePhone").value.trim();
+  const pin = document.getElementById("homePin").value.trim();
+
+  if(!phone || !pin){
+    alert("Συμπλήρωσε στοιχεία");
+    return;
+  }
+
+  const expectedPin = phone.slice(-4);
+
+  if(pin !== expectedPin){
+    alert("Λάθος PIN");
+    return;
+  }
+
+  const { data, error } = await client
+    .from("appointmentsnew")
+    .select("*")
+    .eq("phone", phone)
+    .eq("pin", pin);
+
+  if(error){
+    alert("Σφάλμα");
+    return;
+  }
+
+  if(!data || data.length === 0){
+    alert("Δεν βρέθηκαν ραντεβού");
+    return;
+  }
+
+  renderHomeAppointments(data);
+}
+
+/* ================= HELPERS ================= */
+
+function generatePIN(){
+  return Math.floor(1000 + Math.random() * 9000).toString();
+}
+
+/* ================= LOAD ================= */
+
+async function load(){
+  const { data } = await client.from("appointmentsnew").select("*");
+  booked = data || [];
+}
+
+async function loadBlocked(){
+  const { data, error } = await client
+    .from("blocked_days")
+    .select("*");
+
+  if(error){
+    console.error(error);
+    return;
+  }
+
+  blocked = data || [];
+}
+
+/* ================= NAV ================= */
 
 async function go(n){
   document.getElementById("s"+screen).classList.remove("active");
@@ -289,30 +426,6 @@ async function go(n){
     renderAdminMonths();
     renderAdminCalendar();
   }
-}
-
-/* LOAD */
-async function load(){
-  const { data } = await client.from("appointmentsnew").select("*");
-  booked = data || [];
-}
-
-async function loadBlocked(){
-  const { data, error } = await client
-    .from("blocked_days")
-    .select("*");
-
-  if(error){
-    console.error(error);
-    return;
-  }
-
-  blocked = data || [];
-}
-
-async function loadBlocked(){
-  const { data } = await client.from("blocked_days").select("*");
-  blocked = data || [];
 }
 
 /* ================= BOOKING ================= */
@@ -356,22 +469,13 @@ function renderCalendar(){
   const m = months[monthIndex];
   const days = new Date(m.getFullYear(), m.getMonth() + 1, 0).getDate();
 
-  const weekdays = [
-    "Κυριακή",
-    "Δευτέρα",
-    "Τρίτη",
-    "Τετάρτη",
-    "Πέμπτη",
-    "Παρασκευή",
-    "Σάββατο"
-  ];
+  const weekdays = ["Κυριακή","Δευτέρα","Τρίτη","Τετάρτη","Πέμπτη","Παρασκευή","Σάββατο"];
 
   for(let i = 1; i <= days; i++){
 
     const date = `${m.getFullYear()}-${m.getMonth()+1}-${i}`;
 
     const div = document.createElement("div");
-
     div.className = "day" + (selectedDay === date ? " active" : "");
 
     const dateObj = new Date(m.getFullYear(), m.getMonth(), i);
@@ -399,8 +503,7 @@ function renderTimes(){
 
   if(!selectedDay) return;
 
-  const isBlocked = blocked.some(b => b.day === selectedDay);
-
+  const isBlocked = blocked.some(b => String(b.day) === selectedDay);
   if(isBlocked){
     box.innerHTML = "<div>Η μέρα είναι κλειστή</div>";
     return;
@@ -411,8 +514,9 @@ function renderTimes(){
 
       const t = `${h}:${m}`;
 
-      const exists = booked.find(b =>
-        b.day === selectedDay && b.time === t
+      const exists = booked.some(b =>
+        String(b.day) === selectedDay &&
+        String(b.time) === t
       );
 
       if(exists) return;
@@ -431,212 +535,212 @@ function renderTimes(){
   }
 }
 
+/* ================= BOOK ================= */
+
 async function book(){
 
-  const name = document.getElementById("name").value;
-  const phone = document.getElementById("phone").value;
+  const name = document.getElementById("name").value.trim();
+  const phone = document.getElementById("phone").value.trim();
 
-  // Έλεγχος αν το ίδιο τηλέφωνο έχει ήδη ραντεβού την ίδια μέρα
+  await load();
+
+  if(!name || !phone){
+    alert("Συμπλήρωσε όνομα και τηλέφωνο");
+    return;
+  }
+
+  if(!selectedDay || !selectedTime){
+    alert("Διάλεξε μέρα και ώρα");
+    return;
+  }
+
+  const alreadyTaken = booked.some(b =>
+    String(b.day) === selectedDay &&
+    String(b.time) === selectedTime
+  );
+
+  if(alreadyTaken){
+    alert("Η ώρα μόλις έκλεισε. Διάλεξε άλλη.");
+    return;
+  }
+
   const existingBooking = booked.find(b =>
     b.phone === phone && b.day === selectedDay
   );
 
-  if(existingBooking){
+ if(existingBooking){
+  alert(`Έχεις ήδη ραντεβού αυτή τη μέρα στις ${existingBooking.time}.`);
+  return;
+}
+const pin = phone.slice(-4);
 
-    alert(
-      `Γεια σου ${existingBooking.name}! Έχεις ήδη ενεργό ραντεβού στις ${existingBooking.time}.`
-    );
+  await client.from("appointmentsnew").insert([{
+    name,
+    phone,
+    day: selectedDay,
+    time: selectedTime,
+    pin
+  }]);
 
+document.getElementById("receipt").innerHTML = `
+  <div style="text-align:center;font-weight:700;font-size:16px;margin-bottom:10px;">
+    ΚΡΑΤΗΣΗ
+  </div>
+
+  <hr style="opacity:0.2;">
+
+  <div><b>Όνομα:</b> ${name}</div>
+  <div><b>Μέρα:</b> ${selectedDay}</div>
+  <div><b>Ώρα:</b> ${selectedTime}</div>
+  <div><b>Τηλ:</b> ${phone}</div>
+
+  <br>
+
+  <div style="text-align:center;font-size:18px;font-weight:800;color:#d6b25e;">
+    Κωδικός ακύρωσης: ${pin}
+  </div>
+
+  <hr style="opacity:0.2;">
+`;
+
+go(4);
+}
+
+
+/* ================= CANCEL PRO FIXED ================= */
+
+async function cancelBookingPro(){
+
+  const phone = prompt("Τηλέφωνο:");
+  if(!phone) return;
+
+  const cleanPhone = phone.trim();
+  const expectedPin = cleanPhone.slice(-4);
+
+  const pin = prompt("PIN:");
+  if(!pin) return;
+
+  if(pin !== expectedPin){
+    alert("Λάθος PIN");
     return;
   }
 
-  await client.from("appointmentsnew").insert([
-    {
-      name,
-      phone,
-      day: selectedDay,
-      time: selectedTime
-    }
-  ]);
+  const { data, error } = await client
+    .from("appointmentsnew")
+    .select("*")
+    .eq("phone", cleanPhone)
+    .eq("pin", expectedPin);
 
-  go(4);
-}
-
-/* ================= ADMIN ================= */
-
-async function loadAdmin(){
-  await load();
-  await loadBlocked();
-
-  initAdmin();
-  renderAdminMonths();
-  renderAdminCalendar();
-
-  adminSelectedDay = null;
-  updateBlockButton();
-}
-
-function initAdmin(){
-  const now = new Date();
-  adminMonths = [];
-
-  for(let i=0;i<12;i++){
-    adminMonths.push(new Date(now.getFullYear(), now.getMonth()+i, 1));
+  if(error){
+    alert("Σφάλμα σύνδεσης");
+    return;
   }
-}
 
-function renderAdminMonths(){
-  const box = document.getElementById("adminMonths");
-  box.innerHTML = "";
+  if(!data || data.length === 0){
+    alert("Δεν βρέθηκαν ραντεβού");
+    return;
+  }
 
-  adminMonths.forEach((m,i)=>{
-    const d = document.createElement("div");
-    d.className = "monthItem" + (i===adminMonthIndex?" active":"");
-    d.innerText = m.toLocaleString("el",{month:"short"});
+  let text = "Τα ραντεβού σου:\n\n";
 
-    d.onclick = ()=>{
-      adminMonthIndex = i;
-      renderAdminMonths();
-      renderAdminCalendar();
-    };
-
-    box.appendChild(d);
+  data.forEach((b, i) => {
+    text += `${i+1}) ${b.day} - ${b.time}\n`;
   });
-}
 
-function renderAdminCalendar(){
-  const box = document.getElementById("adminCalendar");
-  box.innerHTML = "";
+  const choice = prompt(text + "\nΓράψε αριθμό για ακύρωση:");
 
-  const m = adminMonths[adminMonthIndex];
-  const days = new Date(m.getFullYear(), m.getMonth()+1, 0).getDate();
+  const index = parseInt(choice) - 1;
 
-  for(let i=1;i<=days;i++){
-
-    const date = `${m.getFullYear()}-${m.getMonth()+1}-${i}`;
-    const has = booked.some(b => b.day === date);
-    const isBlocked = blocked.some(b => b.day === date);
-
-    const div = document.createElement("div");
-
-    div.className =
-      "day" +
-      (isBlocked ? " blocked" : "") +
-      (!isBlocked && has ? " active" : "");
-
-    div.innerHTML = i;
-
-    div.onclick = ()=>{
-      adminSelectedDay = date;
-      renderAdminDay();
-      updateBlockButton();
-    };
-
-    box.appendChild(div);
-  }
-}
-
-function renderAdminDay(){
-  const box = document.getElementById("adminDayBox");
-  box.innerHTML = "";
-
-  if(!adminSelectedDay){
-    box.innerHTML = "<div>Διάλεξε ημέρα</div>";
+  if(!data[index]){
+    alert("Άκυρη επιλογή");
     return;
   }
 
-  const list = booked.filter(b => b.day === adminSelectedDay);
+  const booking = data[index];
 
-  if(list.length === 0){
-    box.innerHTML = "<div>Δεν υπάρχουν ραντεβού</div>";
+  const ok = confirm(`Να ακυρωθεί ${booking.day} ${booking.time};`);
+  if(!ok) return;
+
+  const { error: delError } = await client
+    .from("appointmentsnew")
+    .delete()
+    .eq("id", booking.id);
+
+  if(delError){
+    alert("Σφάλμα ακύρωσης");
     return;
   }
 
-  list.forEach(b=>{
+  alert("Ακυρώθηκε!");
+
+  // reload λίστα αν ξαναθέλει
+  cancelBookingPro();
+}
+
+function renderHomeAppointments(data){
+
+  const box = document.getElementById("homeAppointments");
+  box.innerHTML = "";
+
+  data.forEach((b)=>{
+
     const div = document.createElement("div");
+
+    div.style = `
+      margin-top:12px;
+      padding:14px;
+      border-radius:16px;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.08);
+      text-align:left;
+    `;
 
     div.innerHTML = `
-      <b>Όνομα:</b> ${b.name}<br>
-      <b>Τηλ:</b> ${b.phone}<br>
-      <b>Ημέρα:</b> ${b.day}<br>
-      <b>Ώρα:</b> ${b.time}<br><br>
+      <div><b>Όνομα:</b> ${b.name}</div>
+      <div><b>Μέρα:</b> ${b.day}</div>
+      <div><b>Ώρα:</b> ${b.time}</div>
+      <div><b>Τηλ:</b> ${b.phone}</div>
 
-      <button onclick="deleteBooking('${b.id}')">❌ Διαγραφή</button>
+      <button onclick="deleteHome('${b.id}')"
+        style="
+          margin-top:12px;
+          width:100%;
+          padding:10px;
+          border-radius:12px;
+          background:rgba(255,59,48,0.15);
+          color:#ff4d4d;
+          border:1px solid rgba(255,59,48,0.35);
+          font-weight:600;
+        ">
+        Διαγραφή
+      </button>
+
+      <hr style="margin-top:12px;opacity:0.2;">
     `;
 
     box.appendChild(div);
   });
 }
 
-async function deleteBooking(id){
-  await client.from("appointmentsnew").delete().eq("id", id);
-  await load();
-  renderAdminCalendar();
-  renderAdminDay();
-}
+async function deleteHome(id){
 
-/* ================= TOGGLE BLOCK (ΣΩΣΤΟ) ================= */
+  const ok = confirm("Να ακυρωθεί;");
+  if(!ok) return;
 
-async function toggleDayBlock(){
+  const { error } = await client
+    .from("appointmentsnew")
+    .delete()
+    .eq("id", id);
 
-  if(!adminSelectedDay){
-    alert("Διάλεξε πρώτα ημέρα");
+  if(error){
+    alert("Σφάλμα");
     return;
   }
 
-  const isBlocked = blocked.some(b => b.day === adminSelectedDay);
+  alert("Ακυρώθηκε!");
 
-  try {
-
-    if(isBlocked){
-
-      const { error } = await client
-        .from("blocked_days")
-        .delete()
-        .eq("day", adminSelectedDay);
-
-      if(error) throw error;
-
-    } else {
-
-      const { error } = await client
-        .from("blocked_days")
-        .insert([{ day: adminSelectedDay }]);
-
-      if(error) throw error;
-    }
-
-    // 🔥 ΠΟΛΥ ΣΗΜΑΝΤΙΚΟ: reload από DB
-    await loadBlocked();
-
-    // 🔥 refresh UI
-    renderAdminCalendar();
-    updateBlockButton();
-
-    const newState = blocked.some(b => b.day === adminSelectedDay);
-
-    alert(newState ? "🔴 Έκλεισε η μέρα" : "🟢 Άνοιξε η μέρα");
-
-  } catch (err) {
-  console.error("FULL ERROR:", err);
-  alert(err.message);
-}
-}
-
-/* BUTTON TEXT */
-function updateBlockButton(){
-  const btn = document.getElementById("blockBtn");
-
-  if(!adminSelectedDay){
-    btn.innerText = "ΚΛΕΙΣΤΟ / ΑΝΟΙΧΤΟ";
-    return;
-  }
-
-  const isBlocked = blocked.some(b => b.day === adminSelectedDay);
-
-  btn.innerText = isBlocked
-    ? "🔴 ΚΛΕΙΣΤΟ (πάτα για άνοιγμα)"
-    : "🟢 ΑΝΟΙΧΤΟ (πάτα για κλείσιμο)";
+  // refresh
+  loginHome();
 }
 
 </script>
