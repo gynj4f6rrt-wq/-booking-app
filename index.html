@@ -221,6 +221,40 @@ h1{
   -webkit-overflow-scrolling: touch;
 }
 
+@keyframes popIn {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeUp {
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+#s4.active h1 {
+  animation: popIn 0.4s ease-out;
+}
+
+#receipt {
+  animation: fadeUp 0.5s ease-out;
+}
+
+.screen {
+  transition: all 0.3s ease;
+}
+
 </style>
 </head>
 
@@ -542,6 +576,31 @@ async function book(){
   const name = document.getElementById("name").value.trim();
   const phone = document.getElementById("phone").value.trim();
 
+const now = new Date();
+
+// selected date (χωρίς ώρα)
+const selectedDate = new Date(selectedDay);
+
+// αν είναι παρελθόν μέρα
+const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+if(selectedDate < today){
+  alert("Η επιλεγμένη ημερομηνία δεν είναι διαθέσιμη για κράτηση");
+  return;
+}
+
+if(selectedDate.getTime() === today.getTime()){
+
+  const [h, m] = selectedTime.split(":");
+  const selectedTimeDate = new Date();
+  selectedTimeDate.setHours(h, m, 0, 0);
+
+  if(selectedTimeDate < now){
+    alert("Δεν μπορείς να κλείσεις ραντεβού σε παρελθοντική ώρα.");
+    return;
+  }
+}
+
   await load();
 
   if(!name || !phone){
@@ -603,7 +662,19 @@ document.getElementById("receipt").innerHTML = `
   <hr style="opacity:0.2;">
 `;
 
-go(4);
+const screen3 = document.getElementById("s3");
+
+screen3.style.transition = "0.3s";
+screen3.style.transform = "scale(0.95)";
+screen3.style.opacity = "0.5";
+
+setTimeout(() => {
+  screen3.style.transform = "scale(1)";
+  screen3.style.opacity = "1";
+
+  go(4);
+}, 200);
+
 }
 
 
