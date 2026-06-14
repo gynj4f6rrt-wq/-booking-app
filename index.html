@@ -11,18 +11,29 @@
 <style>
 
 :root{
-  --bg1:#07070a;
-  --bg2:#0f0f14;
-  --glass:rgba(255,255,255,0.06);
+  --bg1:#07070c;
+  --bg2:#0c0f18;
+
+  --glass:rgba(255,255,255,0.05);
   --glass2:rgba(255,255,255,0.03);
-  --stroke:rgba(255,255,255,0.08);
+
+  --stroke:rgba(255,255,255,0.10);
+
   --text:#ffffff;
-  --muted:rgba(255,255,255,0.55);
-  --gold:#d6b25e;
-  --gold2:#ffdf8a;
+  --muted:rgba(255,255,255,0.6);
+
+  /* 💛 Luxury Gold (not too yellow, more expensive tone) */
+  --gold:#c8a85a;
+  --gold2:#f3e2a2;
+
+  /* optional accent */
+  --accent:#d6b25e;
 }
 
-*{box-sizing:border-box;font-family:Inter,sans-serif;}
+*{
+  box-sizing:border-box;
+  font-family:Inter,sans-serif;
+}
 
 body{
   margin:0;
@@ -30,23 +41,35 @@ body{
   display:flex;
   justify-content:center;
   align-items:center;
+
   background:
-    radial-gradient(circle at 20% 20%, #1a1a22, transparent 40%),
-    radial-gradient(circle at 80% 80%, #0d0d12, transparent 40%),
+    radial-gradient(circle at 20% 20%, #1a1f2e, transparent 40%),
+    radial-gradient(circle at 80% 80%, #0a0d14, transparent 40%),
     linear-gradient(180deg, var(--bg1), var(--bg2));
+
   color:var(--text);
 }
 
+/* MAIN APP */
 .app{
   width:390px;
   height:820px;
   border-radius:34px;
   padding:22px;
   overflow:hidden;
-  background:linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
-  border:1px solid var(--stroke);
+
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.12);
+
+  box-shadow:
+    0 20px 60px rgba(0,0,0,0.6),
+    inset 0 0 0 1px rgba(255,255,255,0.05);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
+/* SCREEN */
 .screen{
   display:none;
   height:100%;
@@ -56,51 +79,78 @@ body{
   text-align:center;
 }
 
-.screen.active{display:flex;}
+.screen.active{
+  display:flex;
+}
 
+/* TITLES (lux gradient) */
 h1{
-  font-size:64px;
-  letter-spacing:4px;
+  font-size:72px;
+  font-weight:800;
+  letter-spacing:6px;
   margin:0;
-  background:linear-gradient(90deg,#fff,var(--gold2));
+
+  background:linear-gradient(90deg,#fff,var(--gold2),var(--gold));
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
 }
 
-h2{font-size:18px;margin:12px 0;}
-
-.sub{
-  font-size:20px;
-  letter-spacing:8px;
-  color:var(--gold);
-  margin-top:8px;
+h2{
+  font-size:18px;
+  margin:12px 0;
+  color:var(--muted);
 }
 
+.sub{
+  font-size:18px;
+  letter-spacing:10px;
+  color:var(--gold);
+  margin-top:10px;
+}
+
+/* INPUTS (lux glass) */
 input{
   width:100%;
   max-width:290px;
   padding:14px;
   margin-top:10px;
   border-radius:16px;
-  border:1px solid var(--stroke);
-  background:var(--glass2);
+
+  border:1px solid rgba(255,255,255,0.12);
+  background:rgba(255,255,255,0.04);
   color:#fff;
+
   text-align:center;
+
+  backdrop-filter: blur(10px);
 }
 
+/* BUTTONS (lux gold edge) */
 button{
   width:100%;
   max-width:290px;
   margin-top:14px;
   padding:14px;
   border-radius:16px;
-  border:none;
+
   cursor:pointer;
   font-weight:700;
-  background:linear-gradient(135deg,var(--gold),var(--gold2));
+
   color:#111;
+
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  border:1px solid rgba(255,255,255,0.15);
+
+  box-shadow:0 10px 25px rgba(0,0,0,0.35);
+  transition:0.2s ease;
 }
 
+button:hover{
+  transform:translateY(-1px);
+  box-shadow:0 14px 30px rgba(0,0,0,0.45);
+}
+
+/* CALENDAR ITEMS */
 .months,.calendar,.times{
   display:flex;
   overflow-x:auto;
@@ -112,97 +162,78 @@ button{
   flex:0 0 auto;
   padding:10px 14px;
   border-radius:999px;
-  border:1px solid var(--stroke);
-  background:var(--glass2);
+
+  border:1px solid rgba(255,255,255,0.12);
+  background:rgba(255,255,255,0.03);
+
   font-size:12px;
   cursor:pointer;
+
+  transition:0.2s ease;
 }
 
+/* DAY CARD */
 .day{
-  width:64px;height:72px;
-  display:flex;align-items:center;justify-content:center;
-  border-radius:18px;
+  width:64px;
+  height:72px;
+  display:flex;
   flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  border-radius:18px;
 }
 
-.monthItem.active,.day.active,.time.selected{
+/* ACTIVE GOLD SELECTION */
+.monthItem.active,
+.day.active,
+.time.selected{
   background:linear-gradient(135deg,var(--gold),var(--gold2));
   color:#111;
+  border:1px solid rgba(255,255,255,0.2);
 }
 
+/* BLOCKED */
 .time.blocked{
-  background:rgba(255,59,48,0.2);
+  background:rgba(255,60,60,0.15);
+  color:#ff6b6b;
   pointer-events:none;
 }
 
-/* ADMIN */
-#adminCalendar .day{margin:4px;}
-#adminCalendar .hasBooking{border:1px solid var(--gold);}
-
-#adminDayBox > div{
-  margin-top:10px;
-  padding:14px;
-  border-radius:18px;
-  background:var(--glass);
-  border:1px solid var(--stroke);
-}
-
-#adminDayBox{
-  width:100%;
-  max-height:300px;
-  overflow-y:auto;
-  margin-top:10px;
-}
-
+/* ADMIN BOX */
 #adminDayBox > div{
   margin-top:10px;
   padding:12px;
   border-radius:14px;
+
   background:rgba(255,255,255,0.04);
   border:1px solid rgba(255,255,255,0.08);
-  text-align:left;
 }
 
-h1{
-  font-size:72px;
-  font-weight:700;
-  letter-spacing:6px;
-}
-
-.day.blocked{
-  background:rgba(255,59,48,0.25);
-  border:1px solid rgba(255,59,48,0.6);
-  color:#ff4d4d;
-}
-
+/* CANCEL BUTTON (lux red glass) */
 .iosCancelBtn{
   width:100%;
   max-width:290px;
   margin-top:14px;
   padding:14px;
+
   border-radius:16px;
 
-  border:1px solid rgba(255,59,48,0.35);
-  background:rgba(255,59,48,0.12);
+  border:1px solid rgba(255,80,80,0.35);
+  background:rgba(255,80,80,0.12);
 
-  color:#ff4d4d;
+  color:#ff6b6b;
   font-weight:600;
-  font-size:14px;
-  letter-spacing:0.5px;
-
-  cursor:pointer;
 
   backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-
   transition:0.2s ease;
 }
 
 .iosCancelBtn:active{
   transform:scale(0.98);
-  background:rgba(255,59,48,0.2);
+  background:rgba(255,80,80,0.2);
 }
 
+/* HOME LIST */
 #homeAppointments{
   width:100%;
   max-width:300px;
@@ -214,48 +245,43 @@ h1{
   display:flex;
   flex-direction:column;
   gap:10px;
-}
 
-#homeAppointments{
   scroll-behavior:smooth;
-  -webkit-overflow-scrolling: touch;
+  -webkit-overflow-scrolling:touch;
 }
 
-@keyframes popIn {
-  0% {
-    transform: scale(0.7);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
+/* ANIMATION LUX */
+@keyframes glowIn{
+  0%{opacity:0; transform:scale(0.9);}
+  100%{opacity:1; transform:scale(1);}
 }
 
-@keyframes fadeUp {
-  0% {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
+#s4.active h1{
+  animation:glowIn 0.4s ease-out;
 }
 
-#s4.active h1 {
-  animation: popIn 0.4s ease-out;
+#receipt{
+  animation:fadeUp 0.5s ease-out;
 }
 
-#receipt {
-  animation: fadeUp 0.5s ease-out;
+.screen{
+  transition:all 0.3s ease;
 }
 
-.screen {
-  transition: all 0.3s ease;
+h1{
+  font-family:"Playfair Display", serif !important;
+  font-size:70px;
+  margin:0;
+  letter-spacing:10px;
+  text-transform:uppercase;
+
+  color:var(--brown);
+
+  text-shadow:0 10px 30px rgba(139,94,60,0.2);
 }
 
 </style>
+
 </head>
 
 <body>
@@ -366,6 +392,45 @@ const client = supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1bWhkcWt3c2xscHZjaXJtY2Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MDA5ODUsImV4cCI6MjA5NDQ3Njk4NX0.KT7eqBsfuzT8V-rQUIp31POR9gusoHJXmxvXjlUy3OU"
 );
 
+function initBooking(){
+
+  const now = new Date();
+
+  monthIndex = now.getMonth();
+  selectedTime = null;
+
+  months = [];
+
+  for(let i=0;i<12;i++){
+    months.push(new Date(now.getFullYear(), now.getMonth()+i, 1));
+  }
+
+  // σωστό format ημερομηνίας
+  selectedDay =
+    now.getFullYear() + "-" +
+    (now.getMonth() + 1) + "-" +
+    now.getDate();
+
+  renderMonths();
+  renderCalendar();
+  renderTimes();
+
+  // 👉 κάνουμε την σημερινή μέρα “active view”
+  requestAnimationFrame(() => {
+    const active = document.querySelector(".day.active");
+
+    if(active){
+      active.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "center"
+      });
+    }
+
+    renderTimes();
+  });
+}
+
 let screen = 1;
 
 let months = [], monthIndex = 0;
@@ -423,7 +488,10 @@ function generatePIN(){
 /* ================= LOAD ================= */
 
 async function load(){
-  const { data } = await client.from("appointmentsnew").select("*");
+  const { data } = await client
+    .from("appointmentsnew")
+    .select("id,day,time,phone,name,pin");
+
   booked = data || [];
 }
 
@@ -448,10 +516,10 @@ async function go(n){
   screen = n;
 
   if(n === 3){
-    await load();
-    await loadBlocked();
-    initBooking();
-  }
+  initBooking();
+  load();
+  loadBlocked();
+}
 
   if(n === 5){
     await load();
@@ -465,7 +533,18 @@ async function go(n){
 /* ================= BOOKING ================= */
 
 function initBooking(){
+
+  monthIndex = 0;
+  selectedTime = null;
+
   const now = new Date();
+
+  // σωστό format ημερομηνίας (ίδιο με το υπόλοιπο app σου)
+  selectedDay =
+    now.getFullYear() + "-" +
+    (now.getMonth() + 1) + "-" +
+    now.getDate();
+
   months = [];
 
   for(let i=0;i<12;i++){
@@ -505,31 +584,76 @@ function renderCalendar(){
 
   const weekdays = ["Κυριακή","Δευτέρα","Τρίτη","Τετάρτη","Πέμπτη","Παρασκευή","Σάββατο"];
 
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
   for(let i = 1; i <= days; i++){
+
+    const currentDate = new Date(
+      m.getFullYear(),
+      m.getMonth(),
+      i
+    );
+
+    const isPast = currentDate < today;
 
     const date = `${m.getFullYear()}-${m.getMonth()+1}-${i}`;
 
     const div = document.createElement("div");
     div.className = "day" + (selectedDay === date ? " active" : "");
+    div.dataset.date = date;
 
-    const dateObj = new Date(m.getFullYear(), m.getMonth(), i);
-    const dayName = weekdays[dateObj.getDay()];
+    const dayName = weekdays[currentDate.getDay()];
 
     div.innerHTML = `
       <div style="font-size:18px;font-weight:600">${i}</div>
       <div style="font-size:10px;opacity:0.7">${dayName}</div>
     `;
 
-    div.onclick = () => {
-      selectedDay = date;
-      selectedTime = null;
-      renderCalendar();
-      renderTimes();
-    };
+    // ❌ ΠΑΛΙΕΣ ΜΕΡΕΣ = ΕΜΦΑΝΙΖΟΝΤΑΙ ΑΛΛΑ DISABLED
+    if(isPast){
+      div.style.opacity = "0.25";
+      div.style.pointerEvents = "none";
+    } else {
+      div.onclick = () => {
+        selectedDay = date;
+        selectedTime = null;
+        renderCalendar();
+        renderTimes();
+      };
+    }
 
     box.appendChild(div);
   }
 }
+
+if(!selectedDay){
+  const today = new Date();
+
+  selectedDay =
+    today.getFullYear() + "-" +
+    (today.getMonth() + 1) + "-" +
+    today.getDate();
+}
+
+setTimeout(() => {
+  const active = document.querySelector(".day.active");
+
+  if(active){
+    active.click();
+  }
+}, 0);
+
+setTimeout(() => {
+  const el = document.querySelector('.day.active');
+  if(el){
+    el.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+      inline: "center"
+    });
+  }
+}, 50);
 
 function renderTimes(){
   const box = document.getElementById("times");
@@ -585,7 +709,7 @@ const selectedDate = new Date(selectedDay);
 const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
 if(selectedDate < today){
-  alert("Η επιλεγμένη ημερομηνία δεν είναι διαθέσιμη για κράτηση");
+  alert("Δεν μπορείς να κλείσεις ραντεβού σε παρελθοντική ημερομηνία.");
   return;
 }
 
